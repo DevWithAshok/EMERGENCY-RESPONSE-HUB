@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City General - Emergency Hub</title>
+    <style>
+        :root {
+            --medical-blue: #003366;
+            --medical-light-blue: #e6f0fa;
+            --alert-red: #d9534f;
+            --text-dark: #333333;
+            --bg-gray: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: var(--medical-blue);
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #666;
+            margin-top: 5px;
+            font-size: 1.1rem;
+        }
+
+        .dashboard-container {
+            display: flex;
+            gap: 30px;
+            max-width: 900px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card { 
+            background-color: var(--white);
+            border-radius: 12px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            padding: 30px; 
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            border-top: 5px solid var(--medical-blue);
+        }
+
+        .card.alert-card {
+            border-top: 5px solid var(--alert-red);
+            background-color: #fffcfc;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--medical-blue);
+            border-bottom: 2px solid var(--medical-light-blue);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--medical-blue);
+            box-shadow: 0 0 5px rgba(0, 51, 102, 0.2);
+        }
+
+        button { 
+            padding: 12px 20px; 
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            width: 100%;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--medical-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: #002244;
+        }
+
+        .btn-danger {
+            background-color: var(--alert-red);
+            color: var(--white);
+            margin-top: 10px;
+        }
+
+        .btn-danger:hover {
+            background-color: #c9302c;
+        }
+
+        .bed-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .bed-display h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .bed-count-number {
+            display: block;
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--alert-red);
+            line-height: 1;
+            margin-top: 10px;
+        }
+
+        .auth-status {
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            color: #28a745;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>City General Hospital</h1>
+        <p>Emergency Hub & ICU Capacity Management</p>
+    </div>
+
+    <div class="dashboard-container">
+        
+        <!-- LOGIN SECTION -->
+        <div class="card" id="login-section">
+            <h3>Staff Authentication</h3>
+            <div class="input-group">
+                <label for="username">Administrator ID</label>
+                <input type="text" id="username" placeholder="Enter username as admin">
+            </div>
+            <div class="input-group">
+                <label for="password">Passcode</label>
+                <input type="password" id="password" placeholder="Enter password as admin123">
+            </div>
+            <button class="btn-primary" onclick="login()">Verify Credentials</button>
+            <!-- Add this new logout button here -->
+            <button class="btn-danger" style="margin-top: 10px;" onclick="logout()">Secure Logout</button>
+            
+            <div id="auth-success" class="auth-status">✓ Secure Connection Established</div>
+        </div>
+
+        <!-- DASHBOARD SECTION -->
+        <div class="card alert-card">
+            <h3>Live Ward Status</h3>
+            <div class="bed-display">
+                <h2>Available ICU Beds</h2>
+                <span id="bed-count" class="bed-count-number">-</span>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-danger" onclick="updateBeds(5)">Update to 5</button>
+                <button class="btn-primary" style="margin-top: 10px;" onclick="updateBeds(10)">Update to 10</button>
+            </div>
+        </div>
+
+    </div>
+<div>
+	<a href="index.html" style="position: absolute; bottom: 15px; left: 15px; background-color: #2c3e50; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-family: sans-serif; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 9999;">← Back to Hub</a>
+</div>
+
+    <script>
+        // 1. Log in and get the JWT Token
+        async function login() {
+            const user = document.getElementById("username").value;
+            const pass = document.getElementById("password").value;
+
+            const formData = new URLSearchParams();
+            formData.append("username", user);
+            formData.append("password", pass);
+
+            try {
+                const response = await fetch("http://localhost:8000/token", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem("token", data.access_token);
+                    
+                    // Show success text, clear password field
+                    document.getElementById("auth-success").style.display = "block";
+                    document.getElementById("password").value = "";
+                } else {
+                    alert("Authentication Failed. Invalid ID or Passcode.");
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+            }
+        }
+
+        // 2. Fetch the public bed count
+        async function loadDashboard() {
+            try {
+                const response = await fetch("http://localhost:8000/api/hospitals");
+                const data = await response.json();
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    document.getElementById("bed-count").innerText = data[0].icu_beds_available;
+                }
+            } catch (error) {
+                console.error("Error loading dashboard:", error);
+            }
+        }
+
+        // 3. Update beds using the Secure Token
+        async function updateBeds(newCount) {
+            const token = localStorage.getItem("token");
+            
+            if (!token) {
+                alert("Action Blocked: Please verify credentials first.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:8000/api/hospitals/1/beds", {
+                    method: "PATCH",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token 
+                    },
+                    body: JSON.stringify({ icu_beds: newCount })
+                });
+
+                if (response.ok) {
+                    loadDashboard(); 
+                } else {
+                    alert("Session Expired: Please verify credentials again.");
+                    document.getElementById("auth-success").style.display = "none";
+                }
+            } catch (error) {
+                console.error("Error updating beds:", error);
+            }
+        }
+
+	// 4. Log out by destroying the token
+        function logout() {
+            // Remove the token from the browser's memory
+            localStorage.removeItem("token");
+            
+            // Hide the green success message
+            document.getElementById("auth-success").style.display = "none";
+            
+            alert("Logged out successfully. The Key Card has been destroyed.");
+        }
+
+        // Check if token exists on load to show green text
+        window.onload = function() {
+            loadDashboard();
+            if(localStorage.getItem("token")) {
+                document.getElementById("auth-success").style.display = "block";
+            }
+        };
+    </script>
+</body>
+</html>

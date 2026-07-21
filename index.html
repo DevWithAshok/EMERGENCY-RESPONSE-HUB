@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emergency Response Hub | Control Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-100 flex flex-col items-center justify-center p-6">
+    
+    <div class="max-w-5xl w-full">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-extrabold tracking-tighter text-white">
+                EMERGENCY <span class="text-red-500">RESPONSE HUB</span>
+            </h1>
+            <p class="text-slate-400 mt-3 text-lg">Integrated Central Command & Dispatch System</p>
+        </div>
+
+        <!-- Directory Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Patient App -->
+            <a href="patient.html" class="glass p-6 rounded-2xl hover:border-red-500 transition-all duration-300 group">
+                <div class="text-3xl mb-4">🚨</div>
+                <h2 class="text-xl font-bold mb-2 group-hover:text-red-400">Patient SOS</h2>
+                <p class="text-slate-400 text-sm">Emergency request mobile interface for citizens.</p>
+            </a>
+
+            <!-- Driver App -->
+            <a href="driver.html" class="glass p-6 rounded-2xl hover:border-emerald-500 transition-all duration-300 group">
+                <div class="text-3xl mb-4">🚑</div>
+                <h2 class="text-xl font-bold mb-2 group-hover:text-emerald-400">Driver Portal</h2>
+                <p class="text-slate-400 text-sm">Live status broadcasting for ambulance fleet.</p>
+            </a>
+
+            <!-- Hospital App -->
+            <a href="hospital_dashboard.html" class="glass p-6 rounded-2xl hover:border-blue-500 transition-all duration-300 group">
+                <div class="text-3xl mb-4">🏥</div>
+                <h2 class="text-xl font-bold mb-2 group-hover:text-blue-400">Hospital Admin</h2>
+                <p class="text-slate-400 text-sm">Real-time ICU and blood inventory management.</p>
+            </a>
+
+            <!-- Tracking Dashboard -->
+            <a href="tracking_dashboard.html" class="glass p-6 rounded-2xl hover:border-purple-500 transition-all duration-300 group">
+                <div class="text-3xl mb-4">📡</div>
+                <h2 class="text-xl font-bold mb-2 group-hover:text-purple-400">Live Tracking</h2>
+                <p class="text-slate-400 text-sm">WebSocket radar for fleet movement monitoring.</p>
+            </a>
+
+            <!-- Command Center -->
+            <a href="command_center.html" class="md:col-span-2 glass p-8 rounded-2xl hover:border-sky-500 transition-all duration-300 group border-l-4 border-l-sky-500">
+                <div class="flex items-center gap-4">
+                    <div class="text-4xl">🌐</div>
+                    <div>
+                        <h2 class="text-2xl font-bold group-hover:text-sky-400">Command Center</h2>
+                        <p class="text-slate-400">Central dispatch hub for intelligent green corridor routing.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <footer class="mt-12 text-center text-slate-600 text-sm">
+            SECURE OPERATIONS SYSTEM • AUTHORIZED PERSONNEL ONLY
+        </footer>
+    </div>
+</body>
+</html>

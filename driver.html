@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        h2 { margin-top: 0; color: #34495e; }
+        .driver-info { color: #7f8c8d; margin-bottom: 25px; }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .btn-online { background-color: #27ae60; }
+        .btn-offline { background-color: #e74c3c; }
+        #status-msg { font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Ambulance Dispatch</h2>
+        <div class="driver-info">Logged in as: <strong>Raj (D1)</strong></div>
+        
+        <button class="btn btn-online" onclick="updateStatus(true)">Go Online</button>
+        <button class="btn btn-offline" onclick="updateStatus(false)">Go Offline</button>
+        
+        <div id="status-msg"></div>
+    </div>
+	<div>
+	<a href="index.html" style="position: absolute; bottom: 15px; left: 15px; background-color: #000000; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-family: sans-serif; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 9999;">← Back to Hub</a>
+</div>
+
+    <script>
+        async function updateStatus(isOnline) {
+            const driverId = "D1"; // Hardcoded to Raj for this test
+            const apiUrl = `http://localhost:8000/api/drivers/${driverId}/status`;
+            const statusBox = document.getElementById('status-msg');
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_online: isOnline })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusBox.textContent = data.message;
+                    statusBox.style.color = isOnline ? "#27ae60" : "#e74c3c";
+                } else {
+                    statusBox.textContent = "Error updating status.";
+                    statusBox.style.color = "red";
+                }
+            } catch (error) {
+                statusBox.textContent = "Cannot connect to server.";
+                statusBox.style.color = "red";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Rescue</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #fce4e4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 10px; text-align: center; width: 100%; max-width: 350px; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2); }
+        h2 { margin-top: 0; color: #c0392b; }
+        select { width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        .btn-sos { width: 100%; padding: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #e74c3c; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; }
+        .btn-sos:hover { background-color: #c0392b; }
+        #status-msg { font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Request Ambulance</h2>
+        <p style="color: #7f8c8d; font-size: 14px;">Ensure location services are enabled.</p>
+        
+        <select id="fleet-type">
+            <option value="PRIVATE">Private Fleet</option>
+            <option value="GOVERNMENT">Government Fleet</option>
+            <option value="ANY">Any Available</option>
+        </select>
+        
+        <button class="btn-sos" onclick="requestAmbulance()">SEND SOS</button>
+        
+        <div id="status-msg"></div>
+    </div>
+	<div>
+	<a href="index.html" style="position: absolute; bottom: 15px; left: 15px; background-color: #2c3e50; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-family: sans-serif; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 9999;">← Back to Hub</a>
+</div>
+
+    <script>
+        function requestAmbulance() {
+            const statusBox = document.getElementById('status-msg');
+            statusBox.textContent = "Locating you...";
+            statusBox.style.color = "#f39c12";
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(async function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const fleetType = document.getElementById('fleet-type').value;
+
+                    const payload = {
+                        user_id: "Patient_Mobile",
+                        pickup_location: { latitude: lat, longitude: lng },
+                        fleet_preference: fleetType
+                    };
+
+                    try {
+                        const response = await fetch("http://localhost:8000/api/book-ambulance", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.status === "success") {
+                            statusBox.textContent = data.message;
+                            statusBox.style.color = "#27ae60";
+                            
+                            // AUTO-REDIRECT TO TRACKING AFTER 2 SECONDS
+                            setTimeout(() => {
+                                window.location.href = "command_center.html";
+                            }, 2000);
+                            
+                        } else {
+                            statusBox.textContent = data.detail || "Error finding driver.";
+                            statusBox.style.color = "#e74c3c";
+                        }
+                    } catch (error) {
+                        statusBox.textContent = "Cannot connect to dispatch server.";
+                        statusBox.style.color = "#e74c3c";
+                    }
+                }, function(error) {
+                    statusBox.textContent = "Please allow location access to request help.";
+                    statusBox.style.color = "#e74c3c";
+                });
+            } else {
+                statusBox.textContent = "Geolocation is not supported by your browser.";
+                statusBox.style.color = "#e74c3c";
+            }
+        }
+    </script>
+</body>
+</html>
