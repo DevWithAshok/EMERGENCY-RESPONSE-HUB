@@ -21,7 +21,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def serve_index():
+    return FileResponse("index.html")
 
+@app.get("/patient")
+def serve_patient():
+    return FileResponse("patient.html")
+
+@app.get("/driver")
+def serve_driver():
+    return FileResponse("driver.html")
+
+@app.get("/hospital-dashboard")
+def serve_hospital_dashboard():
+    return FileResponse("hospital_dashboard.html")
+
+@app.get("/command-center")
+def serve_command_center():
+    return FileResponse("command_center.html")
+
+@app.get("/tracking")
+def serve_tracking():
+    return FileResponse("tracking_dashboard.html")
 
 
 # SECURITY & DATABASE SETUP WILL BE STARTED
