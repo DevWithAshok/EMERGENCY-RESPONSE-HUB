@@ -5,3 +5,6 @@ requests
 pyjwt
 pydantic
 httpx
+passlib
+bcrypt
+python-multipart
