@@ -24,7 +24,6 @@
             <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
                 <h3 class="text-sm uppercase text-slate-500 font-bold mb-4">Hospital Bed Vacancy</h3>
                 <div id="hospital-list" class="space-y-3">
-                    <!-- Data will be injected here -->
                     <div class="flex justify-between bg-slate-800 p-2 rounded"><span>City General</span><span class="text-emerald-400 font-bold">12 Beds</span></div>
                 </div>
             </div>
@@ -38,10 +37,11 @@
         </div>
 
         <div class="col-span-6 h-[500px] bg-slate-900 rounded-xl border border-slate-800 relative overflow-hidden">
-            <div id="map-area" class="w-full h-full relative z-0">
-                <!-- Leaflet will automatically inject the real map here -->
-            </div>
+            <div id="map-area" class="w-full h-full relative z-0"></div>
         </div>
+
+
+        
 
         <!-- RIGHT: DISPATCH -->
         <div class="col-span-3 space-y-6">
@@ -54,6 +54,18 @@
     <button onclick="dispatchManual()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-sm transition">
         CALCULATE & DISPATCH
     </button>
+
+    <div id="route-info" class="hidden flex flex-col gap-1 mt-2 p-3 bg-slate-900 border border-slate-700 rounded-lg text-sm">
+        <div class="flex justify-between items-center">
+            <span class="text-slate-400 font-medium">Distance:</span>
+            <span id="route-distance" class="text-sky-400 font-bold">0 km</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-slate-400 font-medium">Est. Time:</span>
+            <span id="route-time" class="text-emerald-400 font-bold">0 mins</span>
+        </div>
+    </div>
+    
 </div>
                 <button onclick="dispatchAmbulance()" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold">DISPATCH NEAREST</button>
             </div>
@@ -67,7 +79,7 @@
     <script>
         let liveMap;
         let ambulanceMarker;
-        let currentRouteLayer = null; // Store the route line here to remove it later
+        let currentRouteLayer = null; 
 
         function initMap() {
             liveMap = L.map('map-area').setView([37.7749, -122.4194], 13);
@@ -157,6 +169,21 @@
                 const start = await getCoords(startCity);
                 const end = await getCoords(endCity);
 
+                // Fetch route from OSRM
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${start.lon},${start.lat};${end.lon},${end.lat}?geometries=geojson`;
+                const osrmResponse = await fetch(osrmUrl);
+                const osrmData = await osrmResponse.json();
+
+                if (!osrmData.routes || osrmData.routes.length === 0) {
+                    throw new Error("Could not calculate road route.");
+                }
+                
+                const routeInfo = osrmData.routes[0];
+                const roadPoints = routeInfo.geometry.coordinates;
+                
+                const distanceKm = (routeInfo.distance / 1000).toFixed(1);
+                const timeMins = Math.ceil(routeInfo.duration / 60);
+
                 const response = await fetch("http://localhost:8000/api/green-corridor", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -172,9 +199,13 @@
                 if (data.status === "Green Corridor Activated") {
                     if (currentRouteLayer) liveMap.removeLayer(currentRouteLayer);
 
-                    const latlngs = data.route_geometry.map(coord => [coord[1], coord[0]]);
+                    const latlngs = roadPoints.map(coord => [coord[1], coord[0]]);
                     currentRouteLayer = L.polyline(latlngs, {color: '#3b82f6', weight: 6}).addTo(liveMap);
                     liveMap.fitBounds(currentRouteLayer.getBounds());
+                    
+                    document.getElementById('route-distance').innerText = `${distanceKm} km`;
+                    document.getElementById('route-time').innerText = `${timeMins} min`;
+                    document.getElementById('route-info').classList.remove('hidden');
                     
                     alert("Route Calculated: " + startCity + " to " + endCity);
                 }
