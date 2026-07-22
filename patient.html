@@ -51,8 +51,10 @@
                         fleet_preference: fleetType
                     };
 
+					const apiUrl = `${window.location.protocol}//${window.location.host}/api/book-ambulance`;
+
                     try {
-                        const response = await fetch("/api/book-ambulance", {
+                        const response = await fetch(apiUrl, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(payload)
@@ -66,7 +68,7 @@
                             
                             // AUTO-REDIRECT TO TRACKING AFTER 2 SECONDS
                             setTimeout(() => {
-                                window.location.href = "command_center.html";
+                                window.location.href = "${window.location.protocol}//${window.location.host}/command_center";
                             }, 2000);
                             
                         } else {
