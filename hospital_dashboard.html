@@ -245,7 +245,7 @@
         // 2. Fetch the public bed count
         async function loadDashboard() {
             try {
-                const response = await fetch(`${window.location.protocol}//${window.location.host}/token`, {
+                const response = await fetch(`${window.location.protocol}//${window.location.host}/api/hospitals`);
                 const data = await response.json();
                 
                 if (Array.isArray(data) && data.length > 0) {
@@ -266,7 +266,7 @@
             }
 
             try {
-                const response = await fetch(`${window.location.protocol}//${window.location.host}/token`, {
+                const response = await fetch(`${window.location.protocol}//${window.location.host}/api/hospitals/1/beds`, {
                     method: "PATCH",
                     headers: { 
                         "Content-Type": "application/json",
