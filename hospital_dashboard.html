@@ -213,7 +213,6 @@
 </div>
 
     <script>
-        // 1. Log in and get the JWT Token
         async function login() {
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
@@ -233,7 +232,6 @@
                     const data = await response.json();
                     localStorage.setItem("token", data.access_token);
                     
-                    // Show success text, clear password field
                     document.getElementById("auth-success").style.display = "block";
                     document.getElementById("password").value = "";
                 } else {
@@ -258,7 +256,7 @@
             }
         }
 
-        // 3. Update beds using the Secure Token
+        // 3. Update beds counting
         async function updateBeds(newCount) {
             const token = localStorage.getItem("token");
             
@@ -299,7 +297,6 @@
             alert("Logged out successfully. The Key Card has been destroyed.");
         }
 
-        // Check if token exists on load to show green text
         window.onload = function() {
             loadDashboard();
             if(localStorage.getItem("token")) {
