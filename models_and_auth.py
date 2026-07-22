@@ -35,7 +35,7 @@ class Hospital(Base):
 
 class Driver(Base):
     __tablename__ = "drivers"
-    id = Column(String, primary_key=True, index=True) # Using String because your HTML uses "D1"
+    id = Column(String, primary_key=True, index=True) #"D1"
     name = Column(String)
     is_online = Column(Boolean, default=False)
 
@@ -52,5 +52,5 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Initialize tables
+# tables
 Base.metadata.create_all(bind=engine)
