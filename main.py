@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -46,7 +47,7 @@ def serve_tracking():
     return FileResponse("tracking_dashboard.html")
 
 
-# SECURITY & DATABASE SETUP WILL BE STARTED
+# SECURITY & DATABASE SETUP 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def get_db():
@@ -85,6 +86,7 @@ class RouteRequest(BaseModel):
     start_lon: float
     end_lat: float
     end_lon: float
+
 class DriverStatusUpdate(BaseModel):
     is_online: bool
 
@@ -96,7 +98,6 @@ class AmbulanceRequest(BaseModel):
     user_id: str
     pickup_location: Location
     fleet_preference: str
-
 
 
 # REST API ENDPOINTS
@@ -166,7 +167,6 @@ def book_ambulance(request: AmbulanceRequest, db: Session = Depends(get_db)):
     available_driver = db.query(Driver).filter(Driver.is_online == True).first()
     
     if available_driver:
-        import requests
         MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/koqj8j2uxwffv9t548estigtgdyeak1k"
         booking_payload = {
             "user_id": request.user_id,
@@ -186,8 +186,6 @@ def book_ambulance(request: AmbulanceRequest, db: Session = Depends(get_db)):
         }
 
 
-
-
 # GREEN CORRIDOR
 POLICE_JUNCTIONS = [
     {"id": "P1", "name": "North Highway", "lat": 50, "lon": 20}, # Updated to 0-100 scale
@@ -196,28 +194,19 @@ POLICE_JUNCTIONS = [
     {"id": "P4", "name": "West Market", "lat": 20, "lon": 50},
 ]
 
-def grid_distance(lat1, lon1, lat2, lon2):
-    return math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
-
-@app.post("/api/green-corridor")
-def activate_green_corridor(route: RouteRequest):
+# Math for the 0-100 grid simulation
+def point_to_line_distance(px, py, x1, y1, x2, y2):
+    line_len = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+    if line_len == 0:
+        return math.sqrt((px - x1)**2 + (py - y1)**2)
     
-    ALERT_THRESHOLD = 15.0 
-    alerted_police = []
+    t = max(0, min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / (line_len**2)))
     
-    for police in POLICE_JUNCTIONS:
-        distance = grid_distance(police["lat"], police["lon"], route.end_lat, route.end_lon)
-        if distance <= ALERT_THRESHOLD:
-            alerted_police.append(police["id"])
+    proj_x = x1 + t * (x2 - x1)
+    proj_y = y1 + t * (y2 - y1)
+    
+    return math.sqrt((px - proj_x)**2 + (py - proj_y)**2)
 
-    room_id = room_manager.setup_emergency_room(route.driver_id, alerted_police)
-            
-    return {
-        "status": "Green Corridor Activated", 
-        "room_id": f"ROOM_{route.driver_id}",
-        "alerted_junctions": alerted_police,
-        "route_geometry": [] # OSRM path won't work on 0-100 scale
-    }
 
 class EmergencyRoomManager:
     def __init__(self):
@@ -258,34 +247,26 @@ room_manager = EmergencyRoomManager()
 
 @app.post("/api/green-corridor")
 def activate_green_corridor(route: RouteRequest):
-    url = f"http://router.project-osrm.org/route/v1/driving/{route.start_lon},{route.start_lat};{route.end_lon},{route.end_lat}?geometries=geojson"
-    
-    try:
-        response = requests.get(url).json()
-        if "routes" not in response or len(response["routes"]) == 0:
-            return {"status": "error", "message": "Could not calculate road route."}
-        road_points = response["routes"][0]["geometry"]["coordinates"]
-    except Exception as e:
-        return {"status": "error", "message": "Failed to connect to Maps API."}
-
-    ALERT_THRESHOLD_KM = 0.5
+    ALERT_THRESHOLD = 15.0 # Distance threshold on your 0-100 grid
     alerted_police = []
     
     for police in POLICE_JUNCTIONS:
-        for point in road_points:
-            path_lon, path_lat = point
-            distance = haversine_distance(police["lat"], police["lon"], path_lat, path_lon)
-            if distance <= ALERT_THRESHOLD_KM:
-                alerted_police.append(police["id"])
-                break 
+        # Check distance from police station to the ROUTE segment
+        dist = point_to_line_distance(
+            police["lat"], police["lon"], 
+            route.start_lat, route.start_lon, 
+            route.end_lat, route.end_lon
+        )
+        
+        if dist <= ALERT_THRESHOLD:
+            alerted_police.append(police["id"])
 
     room_id = room_manager.setup_emergency_room(route.driver_id, alerted_police)
             
     return {
         "status": "Green Corridor Activated", 
         "room_id": f"ROOM_{route.driver_id}",
-        "alerted_junctions": alerted_police,
-        "route_geometry": road_points
+        "alerted_junctions": alerted_police
     }
 
 @app.websocket("/ws/driver/{room_id}")
