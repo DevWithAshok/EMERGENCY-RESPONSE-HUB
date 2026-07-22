@@ -58,7 +58,7 @@
     <script>
         async function updateStatus(isOnline) {
             const driverId = "D1"; 
-            const apiUrl = `http://localhost:8000/api/drivers/${driverId}/status`;
+            const apiUrl = `/api/drivers/${driverId}/status`;
             const statusBox = document.getElementById('status-msg');
 
             try {
