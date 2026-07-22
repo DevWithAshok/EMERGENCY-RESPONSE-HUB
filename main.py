@@ -287,3 +287,49 @@ async def police_listen(websocket: WebSocket, room_id: str):
             await websocket.receive_text()
     except WebSocketDisconnect:
         room_manager.disconnect(websocket, room_id)
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_listeners: Dict[str, List[WebSocket]] = {}
+
+    async def connect_listener(self, websocket: WebSocket, driver_id: str):
+        await websocket.accept()
+        if driver_id not in self.active_listeners:
+            self.active_listeners[driver_id] = []
+        self.active_listeners[driver_id].append(websocket)
+
+    def disconnect_listener(self, websocket: WebSocket, driver_id: str):
+        if driver_id in self.active_listeners:
+            self.active_listeners[driver_id].remove(websocket)
+            if len(self.active_listeners[driver_id]) == 0:
+                del self.active_listeners[driver_id]
+
+    async def broadcast_location(self, driver_id: str, location_data: dict):
+        if driver_id in self.active_listeners:
+            for connection in self.active_listeners[driver_id]:
+                try:
+                    await connection.send_json(location_data)
+                except Exception:
+                    pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/driver/{driver_id}")
+async def driver_location_updater(websocket: WebSocket, driver_id: str):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_json()
+            await manager.broadcast_location(driver_id, data)
+    except WebSocketDisconnect:
+        pass
+
+@app.websocket("/ws/listen/{driver_id}")
+async def listen_to_driver(websocket: WebSocket, driver_id: str):
+    await manager.connect_listener(websocket, driver_id)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect_listener(websocket, driver_id)
