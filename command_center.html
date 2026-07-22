@@ -102,7 +102,7 @@
         
         async function loadHospitals() {
             try {
-                const response = await fetch("http://localhost:8000/api/hospitals");
+                const response = await fetch(`${window.location.protocol}//${window.location.host}/api/hospitals`);
                 const data = await response.json();
                 const hospitalList = document.getElementById("hospital-list");
                 hospitalList.innerHTML = ""; 
@@ -134,7 +134,7 @@
             const btn = document.querySelector('button[onclick="dispatchAmbulance()"]');
             btn.innerText = "SCANNING...";
             try {
-                const response = await fetch("http://localhost:8000/api/book-ambulance", {
+                const response = await fetch(`${window.location.protocol}//${window.location.host}/api/book-ambulance`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ user_id: "Command_Center", pickup_location: { latitude: 37.7749, longitude: -122.4194 } })
@@ -142,7 +142,8 @@
                 const data = await response.json();
                 if (response.ok) {
                     alert(data.message);
-                    const ws = new WebSocket(`ws://localhost:8000/ws/listen/${data.room_id}`);
+                    const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+					const ws = new WebSocket(`${wsProtocol}${window.location.host}/ws/listen/${data.room_id}`);
                     ws.onopen = () => ambulanceMarker.addTo(liveMap);
                     ws.onmessage = (event) => {
                         const loc = JSON.parse(event.data);
@@ -184,7 +185,7 @@
                 const distanceKm = (routeInfo.distance / 1000).toFixed(1);
                 const timeMins = Math.ceil(routeInfo.duration / 60);
 
-                const response = await fetch("http://localhost:8000/api/green-corridor", {
+                const response = await fetch(`${window.location.protocol}//${window.location.host}/api/green-corridor`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
