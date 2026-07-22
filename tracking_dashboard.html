@@ -12,7 +12,7 @@
 	
     .alerted {
         animation: blinker 0.5s linear infinite;
-        background-color: #ef4444 !important; /* Red color when alerted */
+        background-color: #ef4444 !important; 
         border: 2px solid white !important;
     }
 
@@ -93,7 +93,7 @@
         
         <header class="text-center">
             <h1 class="text-3xl font-bold tracking-tight text-sky-400">Live WebSocket Tracking</h1>
-            <p class="text-slate-400 mt-2">Open this file while running the FastAPI server. Watch the simulation in real-time.</p>
+            <p class="text-slate-400 mt-2">Watch the simulation in real-time.</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -104,7 +104,7 @@
                     <span class="w-3 h-3 rounded-full bg-red-500"></span>
                     Ambulance Driver App
                 </h2>
-                <p class="text-sm text-slate-400 mb-6">Simulate driving by updating GPS coordinates. This pushes data to the server.</p>
+                <p class="text-sm text-slate-400 mb-6">Simulate driving by updating GPS coordinates.</p>
                 
                 <div class="space-y-4">
                     <div>
@@ -151,7 +151,6 @@
                 <p class="text-sm text-slate-400 mb-4">Listens to the WebSocket. The dot moves instantly when the driver updates.</p>
                 
                 <div class="flex-grow radar-grid relative min-h-[300px]" id="radar-map">
-                    <!-- Police Stations based on our Python Mock DB -->
                     <div id="P1" class="police-station" style="left: 20%; top: 50%;">P1</div>
                     <div id="P2" class="police-station" style="left: 50%; top: 80%;">P2</div>
                     <div id="P3" class="police-station" style="left: 80%; top: 50%;">P3</div>
@@ -176,7 +175,6 @@
 </div>
 
     <script>
-    // Use a generic driver ID for this simulation
     const driverId = "D1";
     const wsBaseUrl = "ws://localhost:8000/ws";
 
@@ -188,13 +186,11 @@
     const lonVal = document.getElementById('lon-val');
     const driverStatus = document.getElementById('driver-status');
 
-    // Make sure these IDs match your HTML input elements
     const destLat = document.getElementById('dest-lat');
     const destLon = document.getElementById('dest-lon');
 
     // Trigger Green Corridor Logic
     document.getElementById('trigger-corridor-btn').addEventListener('click', async () => {
-        // Ensure values are parsed as floats before sending
         const payload = {
             driver_id: driverId,
             start_lat: parseFloat(driverLat.value),
@@ -212,12 +208,9 @@
             });
             
             const data = await response.json();
-            // Ensure this part is in your dispatchManual function
 if (data.status === "Green Corridor Activated") {
-    // 1. Clear previous alerts
     document.querySelectorAll('.police-station').forEach(el => el.classList.remove('alerted'));
 
-    // 2. Add 'alerted' class to returned IDs
     data.alerted_junctions.forEach(policeId => {
         const policeNode = document.getElementById(policeId); // Does your HTML have these IDs?
         if (policeNode) {
@@ -228,10 +221,8 @@ if (data.status === "Green Corridor Activated") {
     });
 }
             if (response.ok) {
-                // Clear all previous alerts
                 document.querySelectorAll('.police-station').forEach(el => el.classList.remove('alerted'));
 
-                // Flash the specific police stations returned by the backend
                 if (data.alerted_junctions) {
                     data.alerted_junctions.forEach(policeId => {
                         const policeNode = document.getElementById(policeId);
@@ -249,7 +240,6 @@ if (data.status === "Green Corridor Activated") {
         }
     });
 
-    // Update display text when sliders move
     driverLat.addEventListener('input', (e) => latVal.innerText = e.target.value);
     driverLon.addEventListener('input', (e) => lonVal.innerText = e.target.value);
 
@@ -263,7 +253,6 @@ if (data.status === "Green Corridor Activated") {
         }
     }
 
-    // Send new location whenever the driver moves a slider
     driverLat.addEventListener('input', sendLocation);
     driverLon.addEventListener('input', sendLocation);
 
@@ -287,7 +276,6 @@ if (data.status === "Green Corridor Activated") {
         };
     });
 
-    // --- LISTENER (USER/POLICE) LOGIC ---
     let listenerSocket = null;
     const listenerStatus = document.getElementById('listener-status');
     const ambulanceBlip = document.getElementById('ambulance-blip');
