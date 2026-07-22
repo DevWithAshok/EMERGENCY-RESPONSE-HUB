@@ -34,15 +34,15 @@ def serve_patient():
 def serve_driver():
     return FileResponse("driver.html")
 
-@app.get("/hospital-dashboard")
+@app.get("/hospital_dashboard")
 def serve_hospital_dashboard():
     return FileResponse("hospital_dashboard.html")
 
-@app.get("/command-center")
+@app.get("/command_center")
 def serve_command_center():
     return FileResponse("command_center.html")
 
-@app.get("/tracking")
+@app.get("/tracking_dashboard")
 def serve_tracking():
     return FileResponse("tracking_dashboard.html")
 
