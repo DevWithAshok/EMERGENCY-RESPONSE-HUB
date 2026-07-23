@@ -175,70 +175,64 @@
 </div>
 
     <script>
-    const driverId = "D1";
-    const wsBaseUrl = "ws://localhost:8000/ws";
+        const driverId = "D1";
 
-    // --- DRIVER LOGIC ---
-    let driverSocket = null;
-    const driverLat = document.getElementById('driver-lat');
-    const driverLon = document.getElementById('driver-lon');
-    const latVal = document.getElementById('lat-val');
-    const lonVal = document.getElementById('lon-val');
-    const driverStatus = document.getElementById('driver-status');
+        // Dynamically set protocol (wss: for Render/HTTPS, ws: for local HTTP) and current host
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsBaseUrl = `${wsProtocol}//${window.location.host}/ws`;
 
-    const destLat = document.getElementById('dest-lat');
-    const destLon = document.getElementById('dest-lon');
+        // --- DRIVER LOGIC ---
+        let driverSocket = null;
+        const driverLat = document.getElementById('driver-lat');
+        const driverLon = document.getElementById('driver-lon');
+        const latVal = document.getElementById('lat-val');
+        const lonVal = document.getElementById('lon-val');
+        const driverStatus = document.getElementById('driver-status');
 
-    // Trigger Green Corridor Logic
-    document.getElementById('trigger-corridor-btn').addEventListener('click', async () => {
-        const payload = {
-            driver_id: driverId,
-            start_lat: parseFloat(driverLat.value),
-            start_lon: parseFloat(driverLon.value),
-            end_lat: parseFloat(destLat.value),
-            end_lon: parseFloat(destLon.value)
-        };
+        const destLat = document.getElementById('dest-lat');
+        const destLon = document.getElementById('dest-lon');
 
-        try {
-            const httpBaseUrl = wsBaseUrl.replace("ws://", "http://").replace("/ws", "");
-            const response = await fetch(`${httpBaseUrl}/api/green-corridor`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            const data = await response.json();
-if (data.status === "Green Corridor Activated") {
-    document.querySelectorAll('.police-station').forEach(el => el.classList.remove('alerted'));
+        // Trigger Green Corridor Logic
+        document.getElementById('trigger-corridor-btn').addEventListener('click', async () => {
+            const payload = {
+                driver_id: driverId,
+                start_lat: parseFloat(driverLat.value),
+                start_lon: parseFloat(driverLon.value),
+                end_lat: parseFloat(destLat.value),
+                end_lon: parseFloat(destLon.value)
+            };
 
-    data.alerted_junctions.forEach(policeId => {
-        const policeNode = document.getElementById(policeId); // Does your HTML have these IDs?
-        if (policeNode) {
-            policeNode.classList.add('alerted'); // This triggers the animation
-        } else {
-            console.warn("Could not find HTML element with ID:", policeId);
-        }
-    });
-}
-            if (response.ok) {
-                document.querySelectorAll('.police-station').forEach(el => el.classList.remove('alerted'));
+            try {
+                // Use a clean relative endpoint path instead of rebuilding the URL string
+                const response = await fetch('/api/green-corridor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === "Green Corridor Activated") {
+                    document.querySelectorAll('.police-station').forEach(el => el.classList.remove('alerted'));
 
-                if (data.alerted_junctions) {
-                    data.alerted_junctions.forEach(policeId => {
-                        const policeNode = document.getElementById(policeId);
-                        if (policeNode) {
-                            policeNode.classList.add('alerted');
-                        }
-                    });
+                    if (data.alerted_junctions) {
+                        data.alerted_junctions.forEach(policeId => {
+                            const policeNode = document.getElementById(policeId);
+                            if (policeNode) {
+                                policeNode.classList.add('alerted');
+                            } else {
+                                console.warn("Could not find HTML element with ID:", policeId);
+                            }
+                        });
+                    }
+                } else {
+                    console.error("Backend Error:", data);
+                    alert("Dispatch Failed: " + (data.detail || "Check server logs"));
                 }
-            } else {
-                console.error("Backend Error:", data);
-                alert("Dispatch Failed: " + (data.detail || "Check server logs"));
+            } catch (error) {
+                console.error("Failed to trigger Green Corridor:", error);
             }
-        } catch (error) {
-            console.error("Failed to trigger Green Corridor:", error);
-        }
-    });
+        });
 
     driverLat.addEventListener('input', (e) => latVal.innerText = e.target.value);
     driverLon.addEventListener('input', (e) => lonVal.innerText = e.target.value);
