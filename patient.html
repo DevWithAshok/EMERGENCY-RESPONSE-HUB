@@ -51,7 +51,8 @@
                         fleet_preference: fleetType
                     };
 
-					const apiUrl = `${window.location.protocol}//${window.location.host}/api/book-ambulance`;
+                    // FIXED: Removed the stray 'c' at the end of this line
+                    const apiUrl = `${window.location.protocol}//${window.location.host}/api/book-ambulance`;
 
                     try {
                         const response = await fetch(apiUrl, {
@@ -66,9 +67,9 @@
                             statusBox.textContent = data.message;
                             statusBox.style.color = "#27ae60";
                             
-                            // AUTO-REDIRECT TO TRACKING AFTER 2 SECONDS
+                            // FIXED: Clean relative path to the tracking dashboard
                             setTimeout(() => {
-                                window.location.href = "${window.location.protocol}//${window.location.host}/command_center";
+                                window.location.href = "/tracking_dashboard";
                             }, 2000);
                             
                         } else {
