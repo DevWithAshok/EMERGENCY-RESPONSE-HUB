@@ -289,6 +289,7 @@ async def police_listen(websocket: WebSocket, room_id: str):
         room_manager.disconnect(websocket, room_id)
 
 
+
 class ConnectionManager:
     def __init__(self):
         self.active_listeners: Dict[str, List[WebSocket]] = {}
