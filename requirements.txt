@@ -10,3 +10,4 @@ passlib[bcrypt]
 python-multipart
 passlib
 bcrypt==3.2.2
+websockets
