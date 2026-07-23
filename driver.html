@@ -73,6 +73,9 @@
                 if (response.ok) {
                     statusBox.textContent = data.message;
                     statusBox.style.color = isOnline ? "#27ae60" : "#e74c3c";
+					setTimeout(() => {
+					    window.location.href = "/tracking_dashboard";
+					}, 1500);
                 } else {
                     statusBox.textContent = "Error updating status.";
                     statusBox.style.color = "red";
